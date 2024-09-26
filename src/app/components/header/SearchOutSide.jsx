@@ -2,42 +2,41 @@
 
 import { useEffect, useState } from "react";
 import SearchDropDown from "./SearchDropDown";
-import data from "../../mock/us-property-listings-100.json";
+import { data } from "@/app/mock/data";
 
 const SearchOutSide = () => {
   const [searchValue, setSearchValue] = useState("");
-  const [dataForSearch, setDataForSearch] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
+    // Searchがクリックされたらドロップダウンを閉じる
     if (window !== "undefined") {
       const handleMouseUp = () => {
         setIsOpen(false);
       };
       document.body.addEventListener("mouseup", handleMouseUp);
-
       return () => {
         document.body.removeEventListener("mouseup", handleMouseUp);
       };
     }
   }, []);
 
-  const filterSearch = dataForSearch.filter((property) =>
+  // 検索候補をフィルタリング
+  const filterSearch = data.filter((property) =>
     property.City.toLowerCase().includes(searchValue.toLowerCase())
   );
 
-  const filterDataForSearch = () => {
-    setDataForSearch(data.properties);
-  };
-
   const handleRemove = () => {
     setSearchValue("");
+    setInputValue("");
   };
 
   const handleInputChange = (event) => {
     setIsOpen(true);
-    setSearchValue(event.target.value);
+    const value = event.target.value;
+    setSearchValue(value); // filter
+    setInputValue(value); // uzuuleh
   };
 
   const handleSelectChange = (event) => {
@@ -45,26 +44,26 @@ const SearchOutSide = () => {
     setSearchValue(selectedValue);
   };
 
-  useEffect(() => {
-    filterDataForSearch();
-  }, []);
+  const handleSelect = (selectedItem) => {
+    setInputValue(selectedItem); // inputValueにセット
+    setSearchValue(""); // searchValueはリセット
+    setIsOpen(false); // ドロップダウンを閉じる
+  };
 
   return (
     <div className="container m-auto px-3">
       <label className="input input-bordered flex items-center gap-2">
         <select
           className="select select-bordered w-[100px] max-w-xs"
-          value={selectedOption}
           onChange={handleSelectChange}
         >
+          <option value="All">All</option>
           <option value="rent">Rent</option>
           <option value="sell">Sell</option>
         </select>
-        {searchValue && (
+        {inputValue && (
           <div className="flex items-center bg-yellow-100 px-3 py-1 rounded-lg mr-1">
-            {filterSearch.slice(0, 3).map((property) => (
-              <span key={property.id}>{property.City}</span>
-            ))}
+            {inputValue}
             <div
               className="ml-2 cursor-pointer text-gray-500"
               onClick={handleRemove}
@@ -75,10 +74,11 @@ const SearchOutSide = () => {
         )}
         <input
           onChange={handleInputChange}
+          value={inputValue}
           type="search"
           placeholder="Search"
-          className="text-black pl-3 bg-[#F4F4F5]"
-        />{" "}
+          className="text-black pl-3 bg-[#F4F4F5] w-full"
+        />
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 17 17"
@@ -95,10 +95,9 @@ const SearchOutSide = () => {
 
       {isOpen && (
         <SearchDropDown
-          isOpen={isOpen}
           setIsOpen={setIsOpen}
-          setSearchValue={setSearchValue}
           filterSearch={filterSearch}
+          handleSelect={handleSelect}
         />
       )}
     </div>
@@ -106,20 +105,3 @@ const SearchOutSide = () => {
 };
 
 export default SearchOutSide;
-
-//   const [selectedOption, setSelectedOption] = useState('rent');
-
-//   const handleSelectChange = (event) => {
-//     setSelectedOption(event.target.value);
-//   };
-
-//   return (
-//     <div>
-//       <select value={selectedOption} onChange={handleSelectChange}>
-//         <option value="rent">Rent</option>
-//         <option value="sell">Sell</option>
-//       </select>
-//       <p>You selected: {selectedOption}</p>
-//     </div>
-//   );
-// }
